@@ -1,9 +1,29 @@
+// facebook-no-ads
+// Untagged version: DO NOT USE
+// 25/12/2008
+
+
+// Copyright (C) 2008  Giacomo Ritucci
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   1. Redistributions of source code must retain the above copyright notice,
+//      this list of conditions and the following disclaimer.
+//   2. Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+
+
 // ==UserScript==
-// @name          fb-no-ads
-// @namespace     http://rjack.altervista.org/fb-no-ads
-// @description   Disable advertising on facebook.
-// @include       http://www.facebook.com/*
+// @name          facebook-no-ads
+// @namespace     http://github.com/rjack/facebook-no-ads
+// @description   Remove ads from facebook.
+// @include       http://*.facebook.com/*
 // ==/UserScript==
+
+
+
 
 function remove_ads_and_fix_width () {
 
