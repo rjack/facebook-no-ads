@@ -1,5 +1,5 @@
 // facebook-no-ads
-// Untagged version: DO NOT USE
+// version: 0.1
 // 25/12/2008
 
 
@@ -23,29 +23,88 @@
 // ==/UserScript==
 
 
+document.addEventListener ("DOMNodeInserted",
+
+	function (evt) {
+
+		var ads = null;
+		var content = null
+		var ads_width = 0;
+		var content_width = 0;
 
 
-function remove_ads_and_fix_width () {
+		var log_node = function (node) {
+			GM_log (node.nodeName + " class = " + node.className);
+		}
 
-	var ads = null;
-	var ads_column = null;
-	var right_column = null;
-	var ads_column_style = null;
-	var right_column_style = null;
-	var wall_width = null;
 
-	ads = document.getElementById ("sidebar_ads");
-	if (ads != null)
-		ads_column = ads.parentNode;
+		var find_ads_node = function () {
+			var ads_nodes = null;
+			var ads_class = new Array ("profile_sidebar_ads",
+			                           "UIStandardFrame_SidebarAds");
 
-	right_column = document.getElementById ("right_column");
+			for (var i = 0;
+			     i < ads_class.length
+			     && (!ads_nodes|| ads_nodes.length == 0);
+			     i++)
+				ads_nodes = document.getElementsByClassName (ads_class[i]);
 
-	if (ads_column != null && right_column != null) {
-		ads_column_style = window.getComputedStyle (ads_column, null);
-		right_column_style = window.getComputedStyle (right_column, null);
-		wall_width = (parseInt (right_column_style.width) + parseInt (ads_column_style.width)) + "px";
+			if (ads_nodes.length > 1) {
+				GM_log ("OOPS! found " + ads_nodes.length + "ads_nodes!")
+				return null;
+			}
+			return ads_nodes[0];
+		}
 
-		right_column.style.width = wall_width;
-		ads_column.parentNode.removeChild (ads_column);
-	}
-}
+
+		var find_content_node = function () {
+			var content_nodes = null;
+			var content_class = new Array ("right_column",
+			                               "UIStandardFrame_Content");
+
+			for (var i = 0;
+			     i < content_class.length
+			     && (!content_nodes || content_nodes.length == 0);
+			     i++)
+				content_nodes = document.getElementsByClassName (content_class[i]);
+
+			if (content_nodes.length > 1) {
+				GM_log ("OOPS! found " + ads_nodes.length + "content_nodes!")
+				return null;
+			}
+			return content_nodes[0];
+		}
+
+
+		var get_width = function (node) {
+			node_style = window.getComputedStyle (node, false);
+			return parseInt (node_style.width);
+		}
+
+
+		var set_width = function (node, width) {
+			node.style.width = width + "px";
+		}
+
+
+		var remove_node = function (node) {
+			if (node)
+				node.parentNode.removeChild (node);
+		}
+
+		ads = find_ads_node ();
+		if (!ads)
+			return;
+
+		content = find_content_node ();
+		if (!content)
+			return;
+
+		ads_width = get_width (ads);
+		content_width = get_width (content);
+
+		remove_node (ads);
+		set_width (content, content_width + ads_width);
+	},
+
+	false);
