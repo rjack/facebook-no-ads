@@ -2,6 +2,10 @@
 // version: 0.1
 // 25/12/2008
 
+// version: 0.2
+// 26/12/2008
+// * fix ads not removed from wall-to-wall pages.
+
 
 // Copyright (C) 2008  Giacomo Ritucci
 //
@@ -41,7 +45,8 @@ document.addEventListener ("DOMNodeInserted",
 		var find_ads_node = function () {
 			var ads_nodes = null;
 			var ads_class = new Array ("profile_sidebar_ads",
-			                           "UIStandardFrame_SidebarAds");
+			                           "UIStandardFrame_SidebarAds",
+			                           "UIWashFrame_SidebarAds");
 
 			for (var i = 0;
 			     i < ads_class.length
@@ -60,7 +65,8 @@ document.addEventListener ("DOMNodeInserted",
 		var find_content_node = function () {
 			var content_nodes = null;
 			var content_class = new Array ("right_column",
-			                               "UIStandardFrame_Content");
+			                               "UIStandardFrame_Content",
+						       "UIWashFrame_Content");
 
 			for (var i = 0;
 			     i < content_class.length
