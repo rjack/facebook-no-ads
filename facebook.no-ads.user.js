@@ -27,7 +27,7 @@
 // ==/UserScript==
 
 
-document.addEventListener ("DOMNodeInserted",
+document.addEventListener ("DOMFrameContentLoaded",
 
 	function (evt) {
 
@@ -165,6 +165,8 @@ document.addEventListener ("DOMNodeInserted",
 		/************************************************************
 				      SCRIPT BEGINS HERE
 		************************************************************/
+
+		GM_log ("### EVENT FIRED! ###");
 
 		ads = find_ads_node ();
 		if (!ads)
