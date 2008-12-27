@@ -27,7 +27,7 @@
 // ==/UserScript==
 
 
-document.addEventListener ("DOMFrameContentLoaded",
+document.addEventListener ("DOMNodeInserted",
 
 	function (evt) {
 
