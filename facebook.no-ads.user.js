@@ -134,7 +134,7 @@ document.addEventListener ("DOMNodeInserted",
 		var fix_profile = function () {
 			GM_log ("fix_profile");
 
-			// TODO XPath:
+			// XXX UGLIEST XPATH EVER!
 			// .minifeedwall .from_friend_story
 			// .minifeedwall .from_friend_story .story_content
 			// .minifeedwall .story_body
@@ -142,8 +142,37 @@ document.addEventListener ("DOMNodeInserted",
 			// .commentable_item .show_all_link
 			// .commentable_item .wallpost
 			// .commentable_item .comment_box .wallcontent
-			// .commentable_item .comment_box .comment_add_box textarea
+			// .commentable_item .comment_box .comments_add_box textarea
 			// .story .comment_box .walltext
+
+			var xpr = document.evaluate (
+"//div[contains(@class,'minifeedwall')]//div[contains(@class,'from_friend_story')]"
++ "|" +
+"//div[contains(@class,'minifeedwall')]//div[contains(@class,'from_friend_story')]//div[contains(@class,'story_content')]"
++ "|" +
+"//div[contains(@class,'minifeedwall')]//div[contains(@class,'story_body')]"
++ "|" +
+"//div[contains(@class,'minifeedwall')]//div[contains(@class,'story_body')]//div[contains(@class,'story_with_photo')]//div[contains(@class,'story_photo_metadata')]"
++ "|" +
+"//div[contains(@class,'commentable_item')]//div[contains(@class,'show_all_link')]"
++ "|" +
+"//div[contains(@class,'commentable_item')]//div[contains(@class,'wallpost')]"
++ "|" +
+"//div[contains(@class,'commentable_item')]//div[contains(@class,'comment_box')]//div[contains(@class,'wallcontent')]"
++ "|" +
+"//div[contains(@class,'commentable_item')]//div[contains(@class,'comment_box')]//div[contains(@class,'comments_add_box')]//textarea"
++ "|" +
+"//div[contains(@class,'story')]//div[contains(@class,'comment_box')]//div[contains(@class,'walltext')]"
+,
+					document,
+					null,
+					XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
+					null);
+
+			for (var i = 0; i < xpr.snapshotLength; i++) {
+				var node = xpr.snapshotItem (i);
+				set_width (node, ads_width + get_width (node));
+			}
 		}
 
 
