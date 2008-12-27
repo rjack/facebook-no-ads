@@ -37,8 +37,40 @@ document.addEventListener ("DOMNodeInserted",
 		var content_width = 0;
 
 
+		/************************************************************
+					FUNCTIONS
+		************************************************************/
+
 		var log_node = function (node) {
 			GM_log (node.nodeName + " class = " + node.className);
+		}
+
+
+		var visiting_profile = function () {
+			if (document.body.className.search ("^profile ") != -1)
+				return true;
+			return false;
+		}
+
+
+		var visiting_inbox = function () {
+			if (document.body.className.search ("^inbox ") != -1)
+				return true;
+			return false;
+		}
+
+
+		var visiting_wall_to_wall = function () {
+			if (document.body.className.search ("^wall ") != -1)
+				return true;
+			return false;
+		}
+
+
+		var visiting_ubersearch = function () {
+			if (document.body.className.search ("^ubersearch ") != -1)
+				return true;
+			return false;
 		}
 
 
@@ -98,6 +130,42 @@ document.addEventListener ("DOMNodeInserted",
 				node.parentNode.removeChild (node);
 		}
 
+
+		var fix_profile = function () {
+			GM_log ("fix_profile");
+
+			// TODO XPath:
+			// .minifeedwall .from_friend_story
+			// .minifeedwall .from_friend_story .story_content
+			// .minifeedwall .story_body
+			// .minifeedwall .story_body .story_with_photo .story_photo_metadata
+			// .commentable_item .show_all_link
+			// .commentable_item .wallpost
+			// .commentable_item .comment_box .wallcontent
+			// .commentable_item .comment_box .comment_add_box textarea
+			// .story .comment_box .walltext
+		}
+
+
+		var fix_inbox = function () {
+			GM_log ("fix_inbox");
+		}
+
+
+		var fix_wall_to_wall = function () {
+			GM_log ("fix_wall_to_wall");
+		}
+
+
+		var fix_ubersearch = function () {
+			GM_log ("fix_ubersearch");
+		}
+
+
+		/************************************************************
+				      SCRIPT BEGINS HERE
+		************************************************************/
+
 		ads = find_ads_node ();
 		if (!ads)
 			return;
@@ -111,6 +179,15 @@ document.addEventListener ("DOMNodeInserted",
 
 		remove_node (ads);
 		set_width (content, content_width + ads_width);
+
+		if (visiting_profile ())
+			fix_profile ();
+		else if (visiting_inbox ())
+			fix_inbox ();
+		else if (visiting_wall_to_wall ())
+			fix_wall_to_wall ();
+		else if (visiting_ubersearch ())
+			fix_ubersearch ();
 	},
 
 	false);
