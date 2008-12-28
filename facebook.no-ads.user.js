@@ -27,15 +27,50 @@
 // ==/UserScript==
 
 
+var f = new Object();
+
+f.debug = false;     // true logs to js console
+f.context_url;
+f.ads_width = 0;
+f.content = null;
+f.touch_string = "touched_lol_83475";
+
+f.xpath_ads = "//div[contains (@class, 'profile_sidebar_ads')]"
+                 + "|" +
+                 "//div[contains (@class, 'UIStandardFrame_SidebarAds')]"
+                 + "|" +
+                 "//div[contains (@class, 'UIWashFrame_SidebarAds')]";
+
+f.xpath_content = "//div[@id = 'right_column']"     // profile
+                     + "|" +
+                     "//div[contains (@class, 'UIStandardFrame_Content')]"
+                     + "|" +
+                     "//div[contains (@class, 'UIWashFrame_Content')]";
+
+
+f.clear_data = function () {
+	f.ads_width = 0;
+	f.content = null;
+}
+
+
+f.log = function (msg) {
+	if (f.debug)
+		GM_log (msg);
+}
+
+
+f.find_node = function (xpath, node) {
+	var xpr;
+
+	xpr = document.evaluate (xpath, node, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
+	return xpr.singleNodeValue;
+}
+
+
 document.addEventListener ("DOMNodeInserted",
 
 	function (evt) {
-
-		var ads = null;
-		var content = null
-		var ads_width = 0;
-		var content_width = 0;
-
 
 		/************************************************************
 					FUNCTIONS
@@ -46,148 +81,43 @@ document.addEventListener ("DOMNodeInserted",
 		}
 
 
-		var visiting_profile = function () {
-			if (document.body.className.search ("^profile ") != -1)
-				return true;
-			return false;
-		}
-
-
-		var visiting_inbox = function () {
-			if (document.body.className.search ("^inbox ") != -1)
-				return true;
-			return false;
-		}
-
-
-		var visiting_wall_to_wall = function () {
-			if (document.body.className.search ("^wall ") != -1)
-				return true;
-			return false;
-		}
-
-
-		var visiting_ubersearch = function () {
-			if (document.body.className.search ("^ubersearch ") != -1)
-				return true;
-			return false;
-		}
-
-
-		var find_ads_node = function () {
-			var ads_nodes = null;
-			var ads_class = new Array ("profile_sidebar_ads",
-			                           "UIStandardFrame_SidebarAds",
-			                           "UIWashFrame_SidebarAds");
-
-			for (var i = 0;
-			     i < ads_class.length
-			     && (!ads_nodes|| ads_nodes.length == 0);
-			     i++)
-				ads_nodes = document.getElementsByClassName (ads_class[i]);
-
-			if (ads_nodes.length > 1) {
-				GM_log ("OOPS! found " + ads_nodes.length + "ads_nodes!")
-				return null;
-			}
-			return ads_nodes[0];
-		}
-
-
-		var find_content_node = function () {
-			var content_nodes = null;
-			var content_class = new Array ("right_column",
-			                               "UIStandardFrame_Content",
-						       "UIWashFrame_Content");
-
-			for (var i = 0;
-			     i < content_class.length
-			     && (!content_nodes || content_nodes.length == 0);
-			     i++)
-				content_nodes = document.getElementsByClassName (content_class[i]);
-
-			if (content_nodes.length > 1) {
-				GM_log ("OOPS! found " + ads_nodes.length + "content_nodes!")
-				return null;
-			}
-			return content_nodes[0];
-		}
-
-
-		var get_width = function (node) {
+		var css_get = function (node, css_property) {
 			node_style = window.getComputedStyle (node, false);
-			return parseInt (node_style.width);
+			return node_style[css_property];
 		}
 
 
-		var set_width = function (node, width) {
-			node.style.width = width + "px";
+		var css_set = function (node, css_property, value) {
+			node.style[css_property] = value;
 		}
 
 
 		var remove_node = function (node) {
-			if (node)
-				node.parentNode.removeChild (node);
+			node.parentNode.removeChild (node);
 		}
 
 
-		var fix_profile = function () {
-			GM_log ("fix_profile");
+		var stretch_node = function (node, increment, property) {
+			var new_prop;
 
-			// XXX UGLIEST XPATH EVER!
-			// .minifeedwall .from_friend_story
-			// .minifeedwall .from_friend_story .story_content
-			// .minifeedwall .story_body
-			// .minifeedwall .story_body .story_with_photo .story_photo_metadata
-			// .commentable_item .show_all_link
-			// .commentable_item .wallpost
-			// .commentable_item .comment_box .wallcontent
-			// .commentable_item .comment_box .comments_add_box textarea
-			// .story .comment_box .walltext
-
-			var xpr = document.evaluate (
-"//div[contains(@class,'minifeedwall')]//div[contains(@class,'from_friend_story')]"
-+ "|" +
-"//div[contains(@class,'minifeedwall')]//div[contains(@class,'from_friend_story')]//div[contains(@class,'story_content')]"
-+ "|" +
-"//div[contains(@class,'minifeedwall')]//div[contains(@class,'story_body')]"
-+ "|" +
-"//div[contains(@class,'minifeedwall')]//div[contains(@class,'story_body')]//div[contains(@class,'story_with_photo')]//div[contains(@class,'story_photo_metadata')]"
-+ "|" +
-"//div[contains(@class,'commentable_item')]//div[contains(@class,'show_all_link')]"
-+ "|" +
-"//div[contains(@class,'commentable_item')]//div[contains(@class,'wallpost')]"
-+ "|" +
-"//div[contains(@class,'commentable_item')]//div[contains(@class,'comment_box')]//div[contains(@class,'wallcontent')]"
-+ "|" +
-"//div[contains(@class,'commentable_item')]//div[contains(@class,'comment_box')]//div[contains(@class,'comments_add_box')]//textarea"
-+ "|" +
-"//div[contains(@class,'story')]//div[contains(@class,'comment_box')]//div[contains(@class,'walltext')]"
-,
-					document,
-					null,
-					XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
-					null);
-
-			for (var i = 0; i < xpr.snapshotLength; i++) {
-				var node = xpr.snapshotItem (i);
-				set_width (node, ads_width + get_width (node));
-			}
+			new_prop = parseInt (css_get (node, property))
+			           + parseInt (increment);
+			css_set (node, property, new_prop + 'px');
 		}
 
 
-		var fix_inbox = function () {
-			GM_log ("fix_inbox");
+		var touch = function (node) {
+			if (!node.className)
+				node.className = f.touch_string;
+			else
+				node.className += " " + f.touch_string;
 		}
 
 
-		var fix_wall_to_wall = function () {
-			GM_log ("fix_wall_to_wall");
-		}
-
-
-		var fix_ubersearch = function () {
-			GM_log ("fix_ubersearch");
+		var touched = function (node) {
+			if (node.className.search (f.touch_string) != -1)
+				return true;
+			return false;
 		}
 
 
@@ -195,30 +125,45 @@ document.addEventListener ("DOMNodeInserted",
 				      SCRIPT BEGINS HERE
 		************************************************************/
 
-		GM_log ("### EVENT FIRED! ###");
+		var ads = null;
+		var new_node = evt.relatedNode;
 
-		ads = find_ads_node ();
-		if (!ads)
-			return;
+		// Visiting new page.
+		if (window.location.href != f.context_url) {
+			f.log ("Page changed.");
+			f.context_url = window.location.href;
+			f.clear_data ();
+		}
 
-		content = find_content_node ();
-		if (!content)
-			return;
+		f.log ("Searching for ads...");
+		ads = f.find_node (f.xpath_ads, new_node);
+		if (ads) {
+			f.log ("ads found!");
+			f.ads_width = css_get (ads, "width");
+			remove_node (ads);
+			f.log ("ads removed! :)");
 
-		ads_width = get_width (ads);
-		content_width = get_width (content);
+			if (f.content) {
+				if (!touched (f.content)) {
+					stretch_node (f.content, f.ads_width, 'width');
+					touch (f.content);
+					f.log ("content already found, now stretched! :D");
+				} else
+					f.log ("content already stretched.");
+			}
+		}
 
-		remove_node (ads);
-		set_width (content, content_width + ads_width);
+		f.log ("Searching for content...");
+		f.content = f.find_node (f.xpath_content, new_node);
+		if (f.content) {
+			f.log ("content found!");
 
-		if (visiting_profile ())
-			fix_profile ();
-		else if (visiting_inbox ())
-			fix_inbox ();
-		else if (visiting_wall_to_wall ())
-			fix_wall_to_wall ();
-		else if (visiting_ubersearch ())
-			fix_ubersearch ();
+			if (f.ads_width && !touched (f.content)) {
+				stretch_node (f.content, f.ads_width, 'width');
+				touch (f.content);
+				f.log ("ads already removed, content stretched! :D");
+			}
+		}
 	},
 
 	false);
