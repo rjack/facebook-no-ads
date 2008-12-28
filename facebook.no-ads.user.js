@@ -39,7 +39,9 @@ f.xpath_ads = "//div[contains (@class, 'profile_sidebar_ads')]"
                  + "|" +
                  "//div[contains (@class, 'UIStandardFrame_SidebarAds')]"
                  + "|" +
-                 "//div[contains (@class, 'UIWashFrame_SidebarAds')]";
+                 "//div[contains (@class, 'UIWashFrame_SidebarAds')]"
+                 + "|" +
+                 "//div[contains (@class, 'UICompatibilityFrame_SidebarAds')]";
 
 f.xpath_content = "//div[@id = 'right_column']"     // profile
                      + "|" +
