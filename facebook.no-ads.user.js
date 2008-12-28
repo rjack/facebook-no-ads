@@ -1,18 +1,4 @@
-// facebook-no-ads
-// version: 0.1
-// 25/12/2008
-
-// version: 0.2
-// 26/12/2008
-// * fix ads not removed from wall-to-wall pages.
-
-// version: 0.2bis
-// 28/12/2008
-// * almost complete rewrite: inspect the inserted node only and not the whole
-//   dom.
-// * fix ads not removed from error pages.
-
-
+// facebook-no-ads: a greasemonkey script that removes ads from facebook.
 // Copyright (C) 2008  Giacomo Ritucci
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,6 +9,22 @@
 //   2. Redistributions in binary form must reproduce the above copyright
 //      notice, this list of conditions and the following disclaimer in the
 //      documentation and/or other materials provided with the distribution.
+
+
+// CHANGELOG
+//
+// version: 0.2bis
+// 28/12/2008
+// * almost complete rewrite: inspect the inserted node only and not the whole
+//   dom.
+// * fix ads not removed from error pages.
+//
+// version: 0.2
+// 26/12/2008
+// * fix ads not removed from wall-to-wall pages.
+//
+// version: 0.1
+// 25/12/2008
 
 
 // ==UserScript==
