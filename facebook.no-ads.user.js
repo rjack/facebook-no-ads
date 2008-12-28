@@ -6,6 +6,12 @@
 // 26/12/2008
 // * fix ads not removed from wall-to-wall pages.
 
+// version: 0.2bis
+// 28/12/2008
+// * almost complete rewrite: inspect the inserted node only and not the whole
+//   dom.
+// * fix ads not removed from error pages.
+
 
 // Copyright (C) 2008  Giacomo Ritucci
 //
