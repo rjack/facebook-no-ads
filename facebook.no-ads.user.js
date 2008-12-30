@@ -13,6 +13,10 @@
 
 // CHANGELOG
 //
+// version: 0.2bis.1
+// 30/12/2008
+// * remove sponsor box from home page.
+//
 // version: 0.2bis
 // 28/12/2008
 // * almost complete rewrite: inspect the inserted node only and not the whole
@@ -56,6 +60,8 @@ f.xpath_content = "//div[@id = 'right_column']"     // profile
                      "//div[contains (@class, 'UIStandardFrame_Content')]"
                      + "|" +
                      "//div[contains (@class, 'UIWashFrame_Content')]";
+
+f.xpath_remove = new Array ("//div[@id = 'home_sponsor']");
 
 
 f.clear_data = function () {
@@ -145,7 +151,10 @@ document.addEventListener ("DOMNodeInserted",
 			f.clear_data ();
 		}
 
-		f.log ("Searching for ads...");
+		/*
+		 * Sidebar ads.
+		 */
+		f.log ("Searching for ads sidebar...");
 		ads = f.find_node (f.xpath_ads, new_node);
 		if (ads) {
 			f.log ("ads found!");
@@ -163,6 +172,9 @@ document.addEventListener ("DOMNodeInserted",
 			}
 		}
 
+		/*
+		 * Main content.
+		 */
 		f.log ("Searching for content...");
 		f.content = f.find_node (f.xpath_content, new_node);
 		if (f.content) {
@@ -172,6 +184,19 @@ document.addEventListener ("DOMNodeInserted",
 				stretch_node (f.content, f.ads_width, 'width');
 				touch (f.content);
 				f.log ("ads already removed, content stretched! :D");
+			}
+		}
+
+		/*
+		 * Other elements that must be removed.
+		 */
+		for (var i = 0; i < f.xpath_remove.length; i++) {
+			var remove_me;
+			remove_me = f.find_node (f.xpath_remove[i], new_node);
+			if (remove_me) {
+				f.log ("Removing junk: " + f.xpath_remove[i]
+				       + " matches!");
+				remove_node (remove_me);
 			}
 		}
 	},
