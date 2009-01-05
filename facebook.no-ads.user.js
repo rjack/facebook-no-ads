@@ -34,34 +34,23 @@
 // ==UserScript==
 // @name          facebook-no-ads
 // @namespace     http://github.com/rjack/facebook-no-ads
-// @description   Remove ads from facebook.
+// @description   Remove ads from facebook - v XXX
 // @include       http://*.facebook.com/*
+// @require       http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js
 // ==/UserScript==
 
 
 var f = new Object();
 
 f.debug = false;     // true logs to js console
-f.context_url;
+f.context_url = null;
 f.ads_width = 0;
 f.content = null;
 f.touch_string = "touched_lol_83475";
 
-f.xpath_ads = "//div[contains (@class, 'profile_sidebar_ads')]"
-                 + "|" +
-                 "//div[contains (@class, 'UIStandardFrame_SidebarAds')]"
-                 + "|" +
-                 "//div[contains (@class, 'UIWashFrame_SidebarAds')]"
-                 + "|" +
-                 "//div[contains (@class, 'UICompatibilityFrame_SidebarAds')]";
-
-f.xpath_content = "//div[@id = 'right_column']"     // profile
-                     + "|" +
-                     "//div[contains (@class, 'UIStandardFrame_Content')]"
-                     + "|" +
-                     "//div[contains (@class, 'UIWashFrame_Content')]";
-
-f.xpath_remove = new Array ("//div[@id = 'home_sponsor']");
+f.ads_select = '.profile_sidebar_ads'; //div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds';
+f.content_select = '#right_column';//, div.UIStandardFrame_Content, div.UIWashFrame_Content';
+f.remove_select = '#home_sponsor';
 
 
 f.clear_data = function () {
@@ -76,14 +65,6 @@ f.log = function (msg) {
 }
 
 
-f.find_node = function (xpath, node) {
-	var xpr;
-
-	xpr = document.evaluate (xpath, node, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
-	return xpr.singleNodeValue;
-}
-
-
 document.addEventListener ("DOMNodeInserted",
 
 	function (evt) {
@@ -92,48 +73,28 @@ document.addEventListener ("DOMNodeInserted",
 					FUNCTIONS
 		************************************************************/
 
-		var log_node = function (node) {
-			GM_log (node.nodeName + " class = " + node.className);
-		}
-
-
-		var css_get = function (node, css_property) {
-			node_style = window.getComputedStyle (node, false);
-			return node_style[css_property];
-		}
-
-
-		var css_set = function (node, css_property, value) {
-			node.style[css_property] = value;
-		}
-
-
-		var remove_node = function (node) {
-			node.parentNode.removeChild (node);
-		}
-
-
-		var stretch_node = function (node, increment, property) {
+		var stretch_node = function (jq, increment, property) {
 			var new_prop;
+			var old_prop;
 
-			new_prop = parseInt (css_get (node, property))
-			           + parseInt (increment);
-			css_set (node, property, new_prop + 'px');
+			old_prop = jq.css (property);
+			f.log ('stretch_node: increment = ' + increment);
+			f.log ('stretch_node: old_prop = ' + old_prop);
+			new_prop = (parseInt (old_prop)
+			            + parseInt (increment)) + 'px';
+			f.log ('stretch_node: new_prop = ' + new_prop);
+			jq.css (property, new_prop);
+			f.log ('stretch_node: css = ' + jq.css (property));
 		}
 
 
-		var touch = function (node) {
-			if (!node.className)
-				node.className = f.touch_string;
-			else
-				node.className += " " + f.touch_string;
+		var touch = function (jq) {
+			jq.addClass (f.touch_string);
 		}
 
 
-		var touched = function (node) {
-			if (node.className.search (f.touch_string) != -1)
-				return true;
-			return false;
+		var touched = function (jq) {
+			return jq.is ('.' + f.touch_string);
 		}
 
 
@@ -146,7 +107,7 @@ document.addEventListener ("DOMNodeInserted",
 
 		// Visiting new page.
 		if (window.location.href != f.context_url) {
-			f.log ("Page changed.");
+			f.log ('Page changed.');
 			f.context_url = window.location.href;
 			f.clear_data ();
 		}
@@ -154,51 +115,45 @@ document.addEventListener ("DOMNodeInserted",
 		/*
 		 * Sidebar ads.
 		 */
-		f.log ("Searching for ads sidebar...");
-		ads = f.find_node (f.xpath_ads, new_node);
-		if (ads) {
-			f.log ("ads found!");
-			f.ads_width = css_get (ads, "width");
-			remove_node (ads);
-			f.log ("ads removed! :)");
+		f.log ('Searching for ads sidebar...');
+		ads = $(f.ads_select, new_node);
+		f.log ('ads.length = ' + ads.length);
+		if (ads.length) {
+			f.log ('ads found!');
+			f.ads_width = ads.css ('width');
+			ads.remove ();
+			f.log ('ads removed! :)');
 
-			if (f.content) {
+			if (f.content.length) {
 				if (!touched (f.content)) {
 					stretch_node (f.content, f.ads_width, 'width');
 					touch (f.content);
-					f.log ("content already found, now stretched! :D");
+					f.log ('content already found, now stretched! :D');
 				} else
-					f.log ("content already stretched.");
+					f.log ('content already stretched.');
 			}
 		}
 
 		/*
 		 * Main content.
 		 */
-		f.log ("Searching for content...");
-		f.content = f.find_node (f.xpath_content, new_node);
-		if (f.content) {
-			f.log ("content found!");
+		f.log ('Searching for content...');
+		f.content = $(f.content_select, new_node);
+		f.log ('f.content.length = ' + f.content.length);
+		if (f.content.length) {
+			f.log ('content found!');
 
 			if (f.ads_width && !touched (f.content)) {
 				stretch_node (f.content, f.ads_width, 'width');
 				touch (f.content);
-				f.log ("ads already removed, content stretched! :D");
+				f.log ('ads already removed, content stretched! :D');
 			}
 		}
 
 		/*
 		 * Other elements that must be removed.
 		 */
-		for (var i = 0; i < f.xpath_remove.length; i++) {
-			var remove_me;
-			remove_me = f.find_node (f.xpath_remove[i], new_node);
-			if (remove_me) {
-				f.log ("Removing junk: " + f.xpath_remove[i]
-				       + " matches!");
-				remove_node (remove_me);
-			}
-		}
+		$(f.remove_select, new_node).remove();
 	},
 
 	false);
