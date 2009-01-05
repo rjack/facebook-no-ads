@@ -42,8 +42,9 @@
 
 var f = new Object();
 
-f.debug = false;     // true logs to js console
+f.debug = true;     // true logs to js console
 f.context_url = null;
+f.in_count = 0;
 f.ads_width = 0;
 f.content = null;
 f.touch_string = "touched_lol_83475";
@@ -65,95 +66,92 @@ f.log = function (msg) {
 }
 
 
-document.addEventListener ("DOMNodeInserted",
+function handle_inserted (evt) {
 
-	function (evt) {
+	/************************************************************
+				FUNCTIONS
+	************************************************************/
 
-		/************************************************************
-					FUNCTIONS
-		************************************************************/
+	var stretch_node = function (jq, increment, property) {
+		var new_prop;
+		var old_prop;
 
-		var stretch_node = function (jq, increment, property) {
-			var new_prop;
-			var old_prop;
-
-			old_prop = jq.css (property);
-			f.log ('stretch_node: increment = ' + increment);
-			f.log ('stretch_node: old_prop = ' + old_prop);
-			new_prop = (parseInt (old_prop)
-			            + parseInt (increment)) + 'px';
-			f.log ('stretch_node: new_prop = ' + new_prop);
-			jq.css (property, new_prop);
-			f.log ('stretch_node: css = ' + jq.css (property));
-		}
+		old_prop = jq.css (property);
+		new_prop = (parseInt (old_prop)
+			    + parseInt (increment)) + 'px';
+		jq.css (property, new_prop);
+	}
 
 
-		var touch = function (jq) {
-			jq.addClass (f.touch_string);
-		}
+	var touch = function (jq) {
+		jq.addClass (f.touch_string);
+	}
 
 
-		var touched = function (jq) {
-			return jq.is ('.' + f.touch_string);
-		}
+	var touched = function (jq) {
+		return jq.is ('.' + f.touch_string);
+	}
 
 
-		/************************************************************
-				      SCRIPT BEGINS HERE
-		************************************************************/
+	/************************************************************
+			      SCRIPT BEGINS HERE
+	************************************************************/
 
-		var ads = null;
-		var new_node = evt.relatedNode;
+	var ads = null;
+	var new_node = $(evt.relatedNode);
 
-		// Visiting new page.
-		if (window.location.href != f.context_url) {
-			f.log ('Page changed.');
-			f.context_url = window.location.href;
-			f.clear_data ();
-		}
+	new_node.addClass ('lol-in-' + f.in_count);
+	f.in_count++;
 
-		/*
-		 * Sidebar ads.
-		 */
-		f.log ('Searching for ads sidebar...');
-		ads = $(f.ads_select, new_node);
-		f.log ('ads.length = ' + ads.length);
-		if (ads.length) {
-			f.log ('ads found!');
-			f.ads_width = ads.css ('width');
-			ads.remove ();
-			f.log ('ads removed! :)');
+	// Visiting new page.
+	if (window.location.href != f.context_url) {
+		f.log ('Page changed.');
+		f.context_url = window.location.href;
+		f.clear_data ();
+	}
 
-			if (f.content.length) {
-				if (!touched (f.content)) {
-					stretch_node (f.content, f.ads_width, 'width');
-					touch (f.content);
-					f.log ('content already found, now stretched! :D');
-				} else
-					f.log ('content already stretched.');
-			}
-		}
+	/*
+	 * Sidebar ads.
+	 */
+	f.log ('Searching for ads sidebar...');
+	ads = new_node.find (f.ads_select);
+	f.log ('ads.length = ' + ads.length);
+	if (ads.length) {
+		f.log ('ads found!');
+		f.ads_width = ads.css ('width');
+		ads.remove ();
+		f.log ('ads removed!');
 
-		/*
-		 * Main content.
-		 */
-		f.log ('Searching for content...');
-		f.content = $(f.content_select, new_node);
-		f.log ('f.content.length = ' + f.content.length);
 		if (f.content.length) {
-			f.log ('content found!');
-
-			if (f.ads_width && !touched (f.content)) {
+			if (!touched (f.content)) {
 				stretch_node (f.content, f.ads_width, 'width');
 				touch (f.content);
-				f.log ('ads already removed, content stretched! :D');
-			}
+				f.log ('content already found, now stretched! :D');
+			} else
+				f.log ('content already stretched.');
 		}
+	}
 
-		/*
-		 * Other elements that must be removed.
-		 */
-		$(f.remove_select, new_node).remove();
-	},
+	/*
+	 * Main content.
+	 */
+	f.log ('Searching for content...');
+	f.content = new_node.find (f.content_select);
+	f.log ('f.content.length = ' + f.content.length);
+	if (f.content.length) {
+		f.log ('content found!');
 
-	false);
+		if (f.ads_width && !touched (f.content)) {
+			stretch_node (f.content, f.ads_width, 'width');
+			touch (f.content);
+			f.log ('ads already removed, content stretched! :D');
+		}
+	}
+
+	/*
+	 * Other elements that must be removed.
+	 */
+	new_node.find(f.remove_select).remove();
+}
+
+document.addEventListener ("DOMNodeInserted", handle_inserted ,false);
