@@ -152,6 +152,7 @@ function clean_up (node) {
 	 * Other elements that must be removed.
 	 */
 	node.find(f.remove_select).remove();
+	// inbox .subject_wrap width
 }
 
 
