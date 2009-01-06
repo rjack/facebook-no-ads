@@ -13,6 +13,11 @@
 
 // CHANGELOG
 //
+// version: 0.3
+// XXX/XXX/XXX
+// * almost complete rewrite using jquery
+// * stretch inbox entries
+//
 // version: 0.2bis.1
 // 30/12/2008
 // * remove sponsor box from home page.
@@ -34,7 +39,7 @@
 // ==UserScript==
 // @name          facebook-no-ads
 // @namespace     http://github.com/rjack/facebook-no-ads
-// @description   Remove ads from facebook - v XXX
+// @description   Remove ads from facebook - v0.3
 // @include       http://*.facebook.com/*
 // @require       http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js
 // ==/UserScript==
@@ -42,15 +47,14 @@
 
 var f = new Object();
 
-f.debug = true;     // true logs to js console
+f.debug = false;     // true logs to js console
 f.context_url = null;
-f.in_count = 0;
 f.ads_width = 0;
 f.content = null;
 f.touch_string = "touched_lol_83475";
 
-f.ads_select = '.profile_sidebar_ads'; //div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds';
-f.content_select = '#right_column';//, div.UIStandardFrame_Content, div.UIWashFrame_Content';
+f.ads_select = '.profile_sidebar_ads, div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds';
+f.content_select = '#right_column, div.UIStandardFrame_Content, div.UIWashFrame_Content';
 f.remove_select = '#home_sponsor';
 
 
@@ -66,7 +70,7 @@ f.log = function (msg) {
 }
 
 
-function handle_inserted (evt) {
+function clean_up (node) {
 
 	/************************************************************
 				FUNCTIONS
@@ -98,10 +102,6 @@ function handle_inserted (evt) {
 	************************************************************/
 
 	var ads = null;
-	var new_node = $(evt.relatedNode);
-
-	new_node.addClass ('lol-in-' + f.in_count);
-	f.in_count++;
 
 	// Visiting new page.
 	if (window.location.href != f.context_url) {
@@ -114,7 +114,7 @@ function handle_inserted (evt) {
 	 * Sidebar ads.
 	 */
 	f.log ('Searching for ads sidebar...');
-	ads = new_node.find (f.ads_select);
+	ads = node.find (f.ads_select);
 	f.log ('ads.length = ' + ads.length);
 	if (ads.length) {
 		f.log ('ads found!');
@@ -122,7 +122,7 @@ function handle_inserted (evt) {
 		ads.remove ();
 		f.log ('ads removed!');
 
-		if (f.content.length) {
+		if (f.content && f.content.length) {
 			if (!touched (f.content)) {
 				stretch_node (f.content, f.ads_width, 'width');
 				touch (f.content);
@@ -136,7 +136,7 @@ function handle_inserted (evt) {
 	 * Main content.
 	 */
 	f.log ('Searching for content...');
-	f.content = new_node.find (f.content_select);
+	f.content = node.find (f.content_select);
 	f.log ('f.content.length = ' + f.content.length);
 	if (f.content.length) {
 		f.log ('content found!');
@@ -151,7 +151,14 @@ function handle_inserted (evt) {
 	/*
 	 * Other elements that must be removed.
 	 */
-	new_node.find(f.remove_select).remove();
+	node.find(f.remove_select).remove();
 }
 
+
+function handle_inserted (evt) {
+	clean_up ($(evt.relatedNode));
+}
+
+
 document.addEventListener ("DOMNodeInserted", handle_inserted ,false);
+clean_up ($(document.body));
