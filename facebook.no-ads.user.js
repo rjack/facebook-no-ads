@@ -45,57 +45,80 @@
 // ==/UserScript==
 
 
-var f = new Object();
+var f = {
+	debug : false,     // true logs to js console
+	context_url : null,
+	ads_width : 0,
+	content : null,
+	touch_string : "touched_lol_83475",
 
-f.debug = false;     // true logs to js console
-f.context_url = null;
-f.ads_width = 0;
-f.content = null;
-f.touch_string = "touched_lol_83475";
-
-f.ads_select = '.profile_sidebar_ads, div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds';
-f.content_select = '#right_column, div.UIStandardFrame_Content, div.UIWashFrame_Content';
-f.remove_select = '#home_sponsor';
+	ads_select : '.profile_sidebar_ads, div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds',
+	content_select : '#right_column, div.UIStandardFrame_Content, div.UIWashFrame_Content',
+	remove_select : '#home_sponsor',
 
 
-f.clear_data = function () {
-	f.ads_width = 0;
-	f.content = null;
+	clear_data : function () {
+		this.ads_width = 0;
+		this.content = null;
+	},
+
+
+	log : function (msg) {
+		if (this.debug)
+			GM_log (msg);
+	}
 }
 
 
-f.log = function (msg) {
-	if (f.debug)
-		GM_log (msg);
+jQuery.fn.touch = function () {
+	return this.each (
+		function (i, dom_el) {
+			$(this).addClass (f.touch_string);
+		});
 }
+
+
+jQuery.fn.touched = function () {
+	var almost_one_touched = false;
+	this.each (
+		function (i, dom_el) {
+			if ($(this).is ('.' + f.touch_string)) {
+				almost_one_touched = true;
+				return false;     // break iteration
+			}
+		});
+	return almost_one_touched;
+}
+
+
+
+jQuery.fn.stretch = function (increment, property) {
+	return this.each (
+		function (i, dom_el) {
+			var jq = $(dom_el);
+
+			if (!jq.touched ()) {
+				var new_prop;
+				var old_prop;
+				old_prop = jq.css (property);
+				if (property == 'background-position') {
+					var props = old_prop.split (" ");
+					var x = props[0];
+					var y = props[1];
+					new_prop = (parseInt (x) + parseInt (increment) + 'px');
+					new_prop += " " + y;
+				} else
+					new_prop = (parseInt (old_prop)
+						+ parseInt (increment)) + 'px';
+				jq.css (property, new_prop);
+			}
+		})
+		.touch();
+}
+
 
 
 function clean_up (node) {
-
-	/************************************************************
-				FUNCTIONS
-	************************************************************/
-
-	var stretch_node = function (jq, increment, property) {
-		var new_prop;
-		var old_prop;
-
-		old_prop = jq.css (property);
-		new_prop = (parseInt (old_prop)
-			    + parseInt (increment)) + 'px';
-		jq.css (property, new_prop);
-	}
-
-
-	var touch = function (jq) {
-		jq.addClass (f.touch_string);
-	}
-
-
-	var touched = function (jq) {
-		return jq.is ('.' + f.touch_string);
-	}
-
 
 	/************************************************************
 			      SCRIPT BEGINS HERE
@@ -105,7 +128,6 @@ function clean_up (node) {
 
 	// Visiting new page.
 	if (window.location.href != f.context_url) {
-		f.log ('Page changed.');
 		f.context_url = window.location.href;
 		f.clear_data ();
 	}
@@ -113,40 +135,21 @@ function clean_up (node) {
 	/*
 	 * Sidebar ads.
 	 */
-	f.log ('Searching for ads sidebar...');
 	ads = node.find (f.ads_select);
-	f.log ('ads.length = ' + ads.length);
 	if (ads.length) {
-		f.log ('ads found!');
 		f.ads_width = ads.css ('width');
 		ads.remove ();
-		f.log ('ads removed!');
 
-		if (f.content && f.content.length) {
-			if (!touched (f.content)) {
-				stretch_node (f.content, f.ads_width, 'width');
-				touch (f.content);
-				f.log ('content already found, now stretched! :D');
-			} else
-				f.log ('content already stretched.');
-		}
+		if (f.content && f.content.length)
+			f.content.stretch(f.ads_width, 'width');
 	}
 
 	/*
 	 * Main content.
 	 */
-	f.log ('Searching for content...');
 	f.content = node.find (f.content_select);
-	f.log ('f.content.length = ' + f.content.length);
-	if (f.content.length) {
-		f.log ('content found!');
-
-		if (f.ads_width && !touched (f.content)) {
-			stretch_node (f.content, f.ads_width, 'width');
-			touch (f.content);
-			f.log ('ads already removed, content stretched! :D');
-		}
-	}
+	if (f.content.length && f.ads_width)
+		f.content.stretch (f.ads_width, 'width');
 
 	/*
 	 * Other elements that must be removed.
@@ -156,17 +159,19 @@ function clean_up (node) {
 	/*
 	 * Page-specific fixes.
 	 */
-	if ($("body").is(".inbox") && f.ads_width) {
-		$(".subject_wrap").each (
-				function () {
-					var jq = $(this);
-					if (!touched (jq)) {
-						stretch_node (jq, f.ads_width, 'width');
-						touch (jq);
-					}
-				});
+	if (!f.ads_width)
+		return;
+
+	if ($('body').is ('.inbox')) {
+		$('.subject_wrap, .main_column, .notifications .body, .s_message .s_message_header')
+			.stretch (f.ads_width, 'width');
+		$('.notifications, .updates_all').stretch (f.ads_width, 'background-position');
 	}
-	// inbox .subject_wrap width
+
+	if ($('body').is ('.thread')) {
+		$('.message .body .text, #compose_message .attached_item, .message .attached_item')
+			.stretch (f.ads_width, 'width');
+	}
 }
 
 
