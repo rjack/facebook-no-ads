@@ -125,6 +125,7 @@ function clean_up (node) {
 	************************************************************/
 
 	var ads = null;
+	var body = $('body');
 
 	// Visiting new page.
 	if (window.location.href != f.context_url) {
@@ -162,16 +163,19 @@ function clean_up (node) {
 	if (!f.ads_width)
 		return;
 
-	if ($('body').is ('.inbox')) {
+	if (body.is ('.inbox')) {
 		$('.subject_wrap, .main_column, .notifications .body, .s_message .s_message_header')
 			.stretch (f.ads_width, 'width');
 		$('.notifications, .updates_all').stretch (f.ads_width, 'background-position');
 	}
 
-	if ($('body').is ('.thread')) {
+	else if (body.is ('.thread'))
 		$('.message .body .text, #compose_message .attached_item, .message .attached_item')
 			.stretch (f.ads_width, 'width');
-	}
+
+	else if (body.is ('.wall'))
+		$('#wall, #wall_text').stretch (f.ads_width, 'width');
+
 }
 
 
