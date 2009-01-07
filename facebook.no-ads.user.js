@@ -152,6 +152,20 @@ function clean_up (node) {
 	 * Other elements that must be removed.
 	 */
 	node.find(f.remove_select).remove();
+
+	/*
+	 * Page-specific fixes.
+	 */
+	if ($("body").is(".inbox") && f.ads_width) {
+		$(".subject_wrap").each (
+				function () {
+					var jq = $(this);
+					if (!touched (jq)) {
+						stretch_node (jq, f.ads_width, 'width');
+						touch (jq);
+					}
+				});
+	}
 	// inbox .subject_wrap width
 }
 
