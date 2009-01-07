@@ -46,7 +46,6 @@
 
 
 var f = {
-	debug : false,     // true logs to js console
 	context_url : null,
 	ads_width : 0,
 	content : null,
@@ -55,6 +54,7 @@ var f = {
 	ads_select : '.profile_sidebar_ads, div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds',
 	content_select : '#right_column, div.UIStandardFrame_Content, div.UIWashFrame_Content',
 	remove_select : '#home_sponsor',
+	timeout : null,
 
 
 	clear_data : function () {
@@ -118,14 +118,11 @@ jQuery.fn.stretch = function (increment, property) {
 
 
 
-function clean_up (node) {
-
-	/************************************************************
-			      SCRIPT BEGINS HERE
-	************************************************************/
+function clean_up (body) {
 
 	var ads = null;
-	var body = $('body');
+
+	GM_log ("clean up!");
 
 	// Visiting new page.
 	if (window.location.href != f.context_url) {
@@ -136,7 +133,7 @@ function clean_up (node) {
 	/*
 	 * Sidebar ads.
 	 */
-	ads = node.find (f.ads_select);
+	ads = body.find (f.ads_select);
 	if (ads.length) {
 		f.ads_width = ads.css ('width');
 		ads.remove ();
@@ -148,14 +145,14 @@ function clean_up (node) {
 	/*
 	 * Main content.
 	 */
-	f.content = node.find (f.content_select);
+	f.content = body.find (f.content_select);
 	if (f.content.length && f.ads_width)
 		f.content.stretch (f.ads_width, 'width');
 
 	/*
 	 * Other elements that must be removed.
 	 */
-	node.find(f.remove_select).remove();
+	body.find(f.remove_select).remove();
 
 	/*
 	 * Page-specific fixes.
@@ -185,10 +182,24 @@ function clean_up (node) {
 }
 
 
-function handle_inserted (evt) {
-	clean_up ($(evt.relatedNode));
-}
+/************************************************************
+		      SCRIPT BEGINS HERE
+************************************************************/
 
+$(document).ready (
+	function () {
+		var watch = new Date();
+		var tstamp = GM_getValue ('tstamp');
+		var now = String (watch.getTime());
+		if (!tstamp) {
+			tstamp = now;
+			GM_setValue ('tstamp', tstamp);
+		}
 
-document.addEventListener ("DOMNodeInserted", handle_inserted ,false);
-clean_up ($(document.body));
+		var diff = parseInt(now) - parseInt(tstamp);
+		GM_log (diff);
+		if (diff > 60000) {
+			clean_up ($(document.body));
+			GM_setValue ('tstamp', now);
+		}
+	});
