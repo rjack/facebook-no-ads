@@ -185,21 +185,56 @@ function clean_up (body) {
 /************************************************************
 		      SCRIPT BEGINS HERE
 ************************************************************/
-
+/*
 $(document).ready (
 	function () {
-		var watch = new Date();
+		var watch = new Date ();
 		var tstamp = GM_getValue ('tstamp');
-		var now = String (watch.getTime());
+		var now = String (watch.getTime ());
 		if (!tstamp) {
 			tstamp = now;
 			GM_setValue ('tstamp', tstamp);
 		}
 
-		var diff = parseInt(now) - parseInt(tstamp);
+		var diff = parseInt (now) - parseInt (tstamp);
 		GM_log (diff);
 		if (diff > 60000) {
 			clean_up ($(document.body));
 			GM_setValue ('tstamp', now);
 		}
 	});
+*/
+
+var DELAY = 500;
+var clock = new Date ();
+
+
+function recentlyExecuted () {
+	var executed = GM_getValue ("executed");
+	var now = clock.getTime ();
+
+	GM_log ("now = " + now);
+	GM_log ("executed = " + executed);
+	GM_log ("now - executed = " + (now - executed));
+
+	if ((executed == undefined)
+	    || ((now - executed) > DELAY))
+		return false;
+	return true;
+}
+
+
+function setRecentlyExecuted () {
+	GM_setValue ("executed", clock.getTime ());
+}
+
+
+function run () {
+	GM_log ("FIRED!");
+}
+
+
+if (!recentlyExecuted ()) {
+	setRecentlyExecuted ();
+	run ();
+}
