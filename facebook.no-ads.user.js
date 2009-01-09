@@ -46,6 +46,8 @@
 
 
 var f = {
+	RUN_DELAY : 1000,
+	clock : new Date (),
 	context_url : null,
 	ads_width : 0,
 	content : null,
@@ -118,11 +120,10 @@ jQuery.fn.stretch = function (increment, property) {
 
 
 
-function clean_up (body) {
+function clean_up (node) {
+	var body = $(document.body);
 
 	var ads = null;
-
-	GM_log ("clean up!");
 
 	// Visiting new page.
 	if (window.location.href != f.context_url) {
@@ -133,7 +134,7 @@ function clean_up (body) {
 	/*
 	 * Sidebar ads.
 	 */
-	ads = body.find (f.ads_select);
+	ads = node.find (f.ads_select);
 	if (ads.length) {
 		f.ads_width = ads.css ('width');
 		ads.remove ();
@@ -145,14 +146,14 @@ function clean_up (body) {
 	/*
 	 * Main content.
 	 */
-	f.content = body.find (f.content_select);
+	f.content = node.find (f.content_select);
 	if (f.content.length && f.ads_width)
 		f.content.stretch (f.ads_width, 'width');
 
 	/*
 	 * Other elements that must be removed.
 	 */
-	body.find(f.remove_select).remove();
+	node.find(f.remove_select).remove();
 
 	/*
 	 * Page-specific fixes.
@@ -185,52 +186,29 @@ function clean_up (body) {
 /************************************************************
 		      SCRIPT BEGINS HERE
 ************************************************************/
-/*
-$(document).ready (
-	function () {
-		var watch = new Date ();
-		var tstamp = GM_getValue ('tstamp');
-		var now = String (watch.getTime ());
-		if (!tstamp) {
-			tstamp = now;
-			GM_setValue ('tstamp', tstamp);
-		}
 
-		var diff = parseInt (now) - parseInt (tstamp);
-		GM_log (diff);
-		if (diff > 60000) {
-			clean_up ($(document.body));
-			GM_setValue ('tstamp', now);
-		}
-	});
-*/
-
-var DELAY = 500;
-var clock = new Date ();
+function run () {
+	clean_up ($(document.body));
+	document.addEventListener ("DOMNodeInserted",
+			function (evt) {
+				clean_up ($(evt.relatedNode));
+			}, true);
+}
 
 
 function recentlyExecuted () {
-	var executed = GM_getValue ("executed");
-	var now = clock.getTime ();
-
-	GM_log ("now = " + now);
-	GM_log ("executed = " + executed);
-	GM_log ("now - executed = " + (now - executed));
+	var executed = parseInt (GM_getValue ('executed', '0'));
+	var now = f.clock.getTime ();
 
 	if ((executed == undefined)
-	    || ((now - executed) > DELAY))
+	    || ((now - executed) > f.RUN_DELAY))
 		return false;
 	return true;
 }
 
 
 function setRecentlyExecuted () {
-	GM_setValue ("executed", clock.getTime ());
-}
-
-
-function run () {
-	GM_log ("FIRED!");
+	GM_setValue ('executed', String (f.clock.getTime ()));
 }
 
 
