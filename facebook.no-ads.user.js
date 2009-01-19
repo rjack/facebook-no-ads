@@ -14,9 +14,9 @@
 // CHANGELOG
 //
 // version: 0.3
-// XXX/XXX/XXX
-// * almost complete rewrite using jquery
+// 19/01/2009
 // * stretch inbox entries
+// * almost complete rewrite using jquery
 //
 // version: 0.2bis.1
 // 30/12/2008
@@ -160,13 +160,6 @@ function clean_up (node) {
 	 */
 	if (!f.ads_width)
 		return;
-
-	if (body.is ('.profile')) {
-		$('.minifeedwall .story_body, .commentable_item .show_all_link, .commentable_item .wallpost, .commentable_item .comment_box .wallcontent, .commentable_item .comment_box .comments_add_box textarea')
-			.stretch (f.ads_width, 'width');
-		$('.minifeedwall .from_friend_story .story_content, .minifeedwall .wall_story .story_table, .story .comment_box .walltext').stretch (f.ads_width, 'max-width');
-
-	}
 
 	else if (body.is ('.inbox')) {
 		$('.subject_wrap, .main_column, .notifications .body, .s_message .s_message_header')
