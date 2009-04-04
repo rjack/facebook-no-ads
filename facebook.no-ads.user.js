@@ -53,7 +53,7 @@
 // ==UserScript==
 // @name          facebook-no-ads
 // @namespace     http://github.com/rjack/facebook-no-ads
-// @description   Remove ads from facebook - v0.3
+// @description   Remove ads from facebook - v0.3.1
 // @include       http://*.facebook.com/*
 // @require       http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js
 // ==/UserScript==
