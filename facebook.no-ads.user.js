@@ -55,7 +55,7 @@ var f = {
 
 	ads_select : '.profile_sidebar_ads, div.UIStandardFrame_SidebarAds, div.UIWashFrame_SidebarAds, div.UICompatibilityFrame_SidebarAds',
 	content_select : '#right_column, div.UIStandardFrame_Content, div.UIWashFrame_Content',
-	remove_select : '#home_sponsor',
+	remove_select : '#home_sponsor_nile',
 	timeout : null,
 
 
