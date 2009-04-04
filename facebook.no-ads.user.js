@@ -13,6 +13,10 @@
 
 // CHANGELOG
 //
+// version: 0.3.1
+// 04/04/2009
+// * fix home sponsor div id, changed with the new facebook home.
+//
 // version: 0.3
 // 19/01/2009
 // * stretch inbox entries
